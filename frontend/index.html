@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRE Microservices Shop</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">SRE assignment demo</p>
+          <h1>Microservices Shop</h1>
+          <p class="lead">A small working system with authentication, products, orders, chat, metrics, dashboards, and an incident drill.</p>
+        </div>
+        <div class="hero-actions">
+          <button id="refresh">Refresh System</button>
+          <a href="http://localhost:9090/targets" target="_blank" rel="noreferrer">Prometheus</a>
+          <a href="http://localhost:3000" target="_blank" rel="noreferrer">Grafana</a>
+        </div>
+      </section>
+
+      <section class="status-panel">
+        <div>
+          <h2>Service Health</h2>
+          <p>Live checks through the Nginx gateway.</p>
+        </div>
+        <div id="service-status" class="status-grid"></div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Authentication</h2>
+            <a href="http://localhost:8001/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <label>Username<input id="username" placeholder="username" value="nurkhan"></label>
+          <label>Password<input id="password" placeholder="password" type="password" value="password"></label>
+          <label>Role
+            <select id="role">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+          </label>
+          <div class="button-row">
+            <button id="register">Register</button>
+            <button id="login" class="secondary">Login</button>
+          </div>
+          <pre id="auth-output"></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>User Profile</h2>
+            <a href="http://localhost:8002/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <label>Username<input id="profile-username" placeholder="username" value="nurkhan"></label>
+          <label>Email<input id="profile-email" placeholder="email" value="nurkhan@example.com"></label>
+          <button id="create-user">Create User</button>
+          <pre id="users-output"></pre>
+        </article>
+
+        <article class="panel wide">
+          <div class="panel-heading">
+            <h2>Products</h2>
+            <a href="http://localhost:8003/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <div id="products" class="cards"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Create Order</h2>
+            <a href="http://localhost:8004/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <label>User ID<input id="order-user" placeholder="user id" value="1"></label>
+          <label>Product ID<input id="order-product" placeholder="product id" value="1"></label>
+          <label>Quantity<input id="order-quantity" placeholder="quantity" value="1"></label>
+          <button id="create-order">Create Order</button>
+          <pre id="orders-output"></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Chat</h2>
+            <a href="http://localhost:8005/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <label>Sender ID<input id="chat-sender" placeholder="sender id" value="1"></label>
+          <label>Receiver ID<input id="chat-receiver" placeholder="receiver id" value="2"></label>
+          <label>Message<input id="chat-message" placeholder="message" value="Incident drill started"></label>
+          <button id="send-message">Send Message</button>
+          <pre id="chat-output"></pre>
+        </article>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

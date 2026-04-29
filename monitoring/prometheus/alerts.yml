@@ -1,0 +1,20 @@
+groups:
+  - name: sre-microservices-alerts
+    rules:
+      - alert: OrderServiceDown
+        expr: up{job="order-service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Order Service is down"
+          description: "Prometheus cannot scrape order-service. Check Docker status, logs, and DB configuration."
+
+      - alert: AnyMicroserviceDown
+        expr: up{job=~"auth-service|user-service|product-service|order-service|chat-service"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "A backend microservice is down"
+          description: "One of the FastAPI services is unavailable and needs investigation."

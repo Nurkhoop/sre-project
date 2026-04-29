@@ -1,0 +1,82 @@
+services:
+  auth-service:
+    image: sre-auth-service:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    ports:
+      - "8001:8000"
+
+  user-service:
+    image: sre-user-service:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    ports:
+      - "8002:8000"
+
+  product-service:
+    image: sre-product-service:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    ports:
+      - "8003:8000"
+
+  order-service:
+    image: sre-order-service:latest
+    environment:
+      DB_HOST: app-db
+      DB_PORT: 5432
+      DB_NAME: app_db_dev
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      USER_SERVICE_URL: http://user-service:8000
+      PRODUCT_SERVICE_URL: http://product-service:8000
+    ports:
+      - "8004:8000"
+
+  chat-service:
+    image: sre-chat-service:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    ports:
+      - "8005:8000"
+
+  app-db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: app_db_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  frontend:
+    image: sre-frontend:latest
+    ports:
+      - "80:80"
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+      - source: prometheus_alerts
+        target: /etc/prometheus/alerts.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+
+configs:
+  prometheus_config:
+    file: ./monitoring/prometheus/prometheus.yml
+  prometheus_alerts:
+    file: ./monitoring/prometheus/alerts.yml
+
+volumes:
+  postgres-data:

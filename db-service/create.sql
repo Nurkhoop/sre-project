@@ -1,0 +1,2 @@
+-- The database itself is created by POSTGRES_DB in docker-compose.yml.
+-- Individual microservices create their own tables during startup.

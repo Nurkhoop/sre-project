@@ -1,0 +1,11 @@
+project_id          = "replace-with-your-google-cloud-project-id"
+project_name        = "sre-microservices-assignment"
+region              = "us-central1"
+zone                = "us-central1-a"
+machine_type        = "e2-medium"
+boot_image          = "ubuntu-os-cloud/ubuntu-2204-lts"
+boot_disk_size_gb   = 20
+network             = "default"
+network_tag         = "sre-microservices"
+allowed_source_cidr = "0.0.0.0/0"
+ssh_user            = "student"

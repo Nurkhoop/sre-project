@@ -1,0 +1,159 @@
+services:
+  auth-service:
+    build: ./auth-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    depends_on:
+      - app-db
+    ports:
+      - "8001:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build: ./user-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    depends_on:
+      - app-db
+    ports:
+      - "8002:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  product-service:
+    build: ./product-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    depends_on:
+      - app-db
+    ports:
+      - "8003:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  order-service:
+    build: ./order-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DB_HOST: app-db
+      DB_PORT: 5432
+      DB_NAME: app_db_dev
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      USER_SERVICE_URL: http://user-service:8000
+      PRODUCT_SERVICE_URL: http://product-service:8000
+    depends_on:
+      - app-db
+      - user-service
+      - product-service
+    ports:
+      - "8004:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chat-service:
+    build: ./chat-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+    depends_on:
+      - app-db
+    ports:
+      - "8005:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app-db:
+    build: ./db-service
+    environment:
+      POSTGRES_DB: app_db_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_db_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service
+      - user-service
+      - product-service
+      - order-service
+      - chat-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - auth-service
+      - user-service
+      - product-service
+      - order-service
+      - chat-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  grafana-data:

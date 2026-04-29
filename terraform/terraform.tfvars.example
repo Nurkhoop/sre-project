@@ -1,0 +1,5 @@
+aws_region       = "us-east-1"
+instance_ami     = "ami-00000000000000000"
+instance_type    = "t2.micro"
+key_name         = "replace-with-your-key-pair"
+allowed_ssh_cidr = "0.0.0.0/0"
