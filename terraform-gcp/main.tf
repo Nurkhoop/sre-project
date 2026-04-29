@@ -57,6 +57,6 @@ resource "google_compute_instance" "sre_microservices" {
     apt-get install -y docker.io docker-compose-plugin git
     systemctl enable docker
     systemctl start docker
-    usermod -aG docker ${var.ssh_user}
+    id -u ${var.ssh_user} >/dev/null 2>&1 && usermod -aG docker ${var.ssh_user} || true
   SCRIPT
 }
