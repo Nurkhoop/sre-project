@@ -26,6 +26,8 @@ docker compose ps
 - Frontend: http://localhost:8080
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000
+- cAdvisor: http://localhost:8081
+- node-exporter: http://localhost:9100/metrics
 
 Cloud VM URLs:
 
@@ -49,6 +51,12 @@ curl http://localhost:8005/health
 docker compose ps
 ```
 
+6. Run pre-deployment configuration validation:
+
+```bash
+./scripts/validate-config.sh
+```
+
 ## Monitoring Validation
 
 1. Open Prometheus at http://localhost:9090/targets.
@@ -58,6 +66,29 @@ docker compose ps
 5. Open Grafana at http://localhost:3000.
 6. Login with `admin` / `admin`.
 7. Open the `SRE Microservices Overview` dashboard.
+
+## Capacity Planning Validation
+
+Generate a repeatable Order Service load:
+
+```bash
+REQUESTS=300 CONCURRENCY=20 ./scripts/load-test.sh
+```
+
+During the test, watch the Grafana dashboard panels for:
+
+- Order Service request rate
+- p95 latency
+- 5xx errors
+- container CPU usage
+- container memory usage
+- host CPU saturation
+
+For log-based troubleshooting, run:
+
+```bash
+./scripts/inspect-logs.sh order-service
+```
 
 ## Terraform VM Provisioning
 

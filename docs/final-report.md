@@ -12,6 +12,7 @@ This project demonstrates a small production-style microservices system for an S
 - Collect metrics and visualize service health.
 - Simulate a realistic Order Service incident.
 - Document incident response and postmortem analysis.
+- Add SRE automation and capacity planning controls after the incident.
 
 ## 3. Technology Stack
 
@@ -56,8 +57,8 @@ See `docs/architecture.md` for the Mermaid architecture diagram.
 |---|---|
 | Scalability | Independent service containers |
 | Fault isolation | Order Service incident does not stop all services |
-| Observability | Prometheus metrics and Grafana dashboard |
-| Automated deployment | Docker Compose and Terraform |
+| Observability | Prometheus metrics, cAdvisor, node-exporter, and Grafana dashboard |
+| Automated deployment | Docker Compose, Terraform, config validation, and runtime restart policies |
 | Reproducibility | Versioned Compose, Terraform, and monitoring configs |
 | Containerized execution | Dockerfiles for all application services |
 
@@ -78,7 +79,20 @@ Important local URLs:
 
 Every backend service exposes `/health` and `/metrics`.
 
-Prometheus scrapes all backend services. Grafana provides a dashboard named `SRE Microservices Overview`. Prometheus alert rules are configured in `monitoring/prometheus/alerts.yml`. The main incident alert is `OrderServiceDown`.
+Prometheus scrapes all backend services, cAdvisor, and node-exporter. Grafana provides a dashboard named `SRE Microservices Overview`. Prometheus alert rules are configured in `monitoring/prometheus/alerts.yml`. The main incident alert is `OrderServiceDown`, with additional rules for error rate, latency, CPU, memory, service load, and restart-loop symptoms.
+
+## 8.1 Automation and Capacity Planning
+
+Assignment 6 adds:
+
+- `restart: unless-stopped` policies for self-healing container restarts.
+- `.env.example` for standardized runtime configuration.
+- `scripts/validate-config.sh` for pre-deployment configuration validation.
+- `scripts/inspect-logs.sh` for log-based incident troubleshooting.
+- `scripts/load-test.sh` for repeatable capacity testing.
+- Docker Stack resource limits and two `order-service` replicas for horizontal scaling demonstration.
+
+Detailed capacity analysis is documented in `docs/assignment-6-automation-capacity-report.md`.
 
 ## 9. Infrastructure as Code
 

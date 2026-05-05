@@ -1,9 +1,10 @@
 services:
   auth-service:
     build: ./auth-service
+    restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@app-db:5432/app_db_dev}
     depends_on:
       - app-db
     ports:
@@ -16,9 +17,10 @@ services:
 
   user-service:
     build: ./user-service
+    restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@app-db:5432/app_db_dev}
     depends_on:
       - app-db
     ports:
@@ -31,9 +33,10 @@ services:
 
   product-service:
     build: ./product-service
+    restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@app-db:5432/app_db_dev}
     depends_on:
       - app-db
     ports:
@@ -46,15 +49,16 @@ services:
 
   order-service:
     build: ./order-service
+    restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      DB_HOST: app-db
-      DB_PORT: 5432
-      DB_NAME: app_db_dev
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      USER_SERVICE_URL: http://user-service:8000
-      PRODUCT_SERVICE_URL: http://product-service:8000
+      DB_HOST: ${DB_HOST:-app-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-app_db_dev}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      USER_SERVICE_URL: ${USER_SERVICE_URL:-http://user-service:8000}
+      PRODUCT_SERVICE_URL: ${PRODUCT_SERVICE_URL:-http://product-service:8000}
     depends_on:
       - app-db
       - user-service
@@ -69,9 +73,10 @@ services:
 
   chat-service:
     build: ./chat-service
+    restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@app-db:5432/app_db_dev
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@app-db:5432/app_db_dev}
     depends_on:
       - app-db
     ports:
@@ -84,10 +89,11 @@ services:
 
   app-db:
     build: ./db-service
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: app_db_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-app_db_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -100,6 +106,7 @@ services:
 
   frontend:
     build: ./frontend
+    restart: unless-stopped
     ports:
       - "8080:80"
     depends_on:
@@ -116,6 +123,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.51.0
+    restart: unless-stopped
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
@@ -129,6 +137,8 @@ services:
       - product-service
       - order-service
       - chat-service
+      - cadvisor
+      - node-exporter
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9090/-/healthy"]
       interval: 10s
@@ -137,6 +147,7 @@ services:
 
   grafana:
     image: grafana/grafana:10.4.1
+    restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -153,6 +164,28 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    ports:
+      - "9100:9100"
+    volumes:
+      - /:/host:ro,rslave
 
 volumes:
   postgres-data:

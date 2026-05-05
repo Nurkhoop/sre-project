@@ -34,8 +34,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
+        "h": 7,
+        "w": 6,
         "x": 0,
         "y": 0
       },
@@ -55,7 +55,7 @@
       "pluginVersion": "10.4.1",
       "targets": [
         {
-          "expr": "up",
+          "expr": "up{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -75,9 +75,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
+        "h": 7,
+        "w": 6,
+        "x": 6,
         "y": 0
       },
       "id": 2,
@@ -93,7 +93,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (job) (rate(http_requests_total[1m]))",
+          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[1m]))",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -113,9 +113,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
+        "h": 7,
+        "w": 6,
+        "x": 12,
         "y": 0
       },
       "id": 3,
@@ -131,12 +131,278 @@
       },
       "targets": [
         {
-          "expr": "sum by (job, status) (increase(http_requests_total{status=~\"5..\"}[5m]))",
+          "expr": "sum by (job, status) (increase(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\", status=~\"5..\"}[5m]))",
           "legendFormat": "{{job}} {{status}}",
           "refId": "A"
         }
       ],
       "title": "5xx Errors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[5m])))",
+          "legendFormat": "{{job}} p95",
+          "refId": "A"
+        }
+      ],
+      "title": "p95 Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 7
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (container_label_com_docker_compose_service) (rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service!=\"\"}[2m])) * 100",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 7
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by (container_label_com_docker_compose_service) (container_memory_working_set_bytes{container_label_com_docker_compose_service!=\"\"})",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[2m]))",
+          "legendFormat": "host cpu",
+          "refId": "A"
+        }
+      ],
+      "title": "Host CPU Saturation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"order-service\"}[1m]))",
+          "legendFormat": "order-service",
+          "refId": "A"
+        }
+      ],
+      "title": "Order Service Load",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 15
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\", status=~\"5..\"}[5m])) / clamp_min(sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[5m])), 0.001)",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate Ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 15
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "changes(container_start_time_seconds{container_label_com_docker_compose_service!=\"\"}[10m])",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container Start Changes",
       "type": "timeseries"
     }
   ],
@@ -144,6 +410,7 @@
   "schemaVersion": 39,
   "tags": [
     "sre",
+    "capacity-planning",
     "microservices"
   ],
   "templating": {
@@ -157,6 +424,6 @@
   "timezone": "browser",
   "title": "SRE Microservices Overview",
   "uid": "sre-microservices",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

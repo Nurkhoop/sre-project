@@ -29,3 +29,13 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["chat-service:8000"]
+
+  - job_name: cadvisor
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: node-exporter
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["node-exporter:9100"]

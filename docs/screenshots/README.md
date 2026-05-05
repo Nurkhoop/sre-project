@@ -32,6 +32,13 @@ Save screenshots in this folder with these filenames.
 - `16-prometheus-targets-up.png`: `http://localhost:9090/targets` showing all service targets `UP`.
 - `17-prometheus-alert-rules.png`: `http://localhost:9090/rules` showing alert rules.
 - `18-grafana-dashboard.png`: Grafana dashboard `SRE Microservices Overview`.
+- `18a-config-validation.png`: Terminal showing successful `./scripts/validate-config.sh`.
+- `18b-load-test-running.png`: Terminal showing `./scripts/load-test.sh` output with request status counts and approximate RPS.
+- `18c-grafana-under-load.png`: Grafana dashboard showing request rate, latency, CPU, and memory during load.
+- `18d-log-inspection.png`: Terminal showing `./scripts/inspect-logs.sh order-service`.
+- `18e-kubernetes-hpa.png`: `k8s/order-service-hpa.yaml` showing CPU-based HPA policy.
+- `18f-kubernetes-dry-run.png`: Optional terminal output from `kubectl apply --dry-run=client -f k8s/`.
+- `18g-kubernetes-local-validation.png`: Terminal output from `./scripts/validate-k8s-manifests.sh` if no cluster is configured.
 
 ## 5. Incident Simulation
 
