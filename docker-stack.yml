@@ -82,6 +82,34 @@ services:
           cpus: "1.00"
           memory: 512M
 
+  payment-service:
+    image: sre-payment-service:latest
+    environment:
+      DB_HOST: app-db
+      DB_PORT: 5432
+      DB_NAME: app_db_dev
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      ORDER_SERVICE_URL: http://order-service:8000
+    ports:
+      - "8006:8000"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        order: start-first
+      resources:
+        reservations:
+          cpus: "0.20"
+          memory: 256M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+
   chat-service:
     image: sre-chat-service:latest
     environment:

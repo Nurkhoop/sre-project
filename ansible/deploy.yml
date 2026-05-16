@@ -1,0 +1,136 @@
+---
+- name: Configure and deploy SRE microservices stack
+  hosts: sre_nodes
+  become: true
+  vars:
+    repo_version: main
+    docker_compose_version: v2.29.7
+  tasks:
+    - name: Install system dependencies
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - git
+          - curl
+          - ca-certificates
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+        lock_timeout: 300
+
+    - name: Enable Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Check whether Docker Compose plugin is installed
+      ansible.builtin.command:
+        cmd: docker compose version
+      register: docker_compose_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set Docker Compose binary architecture
+      ansible.builtin.set_fact:
+        docker_compose_arch: "{{ 'x86_64' if ansible_architecture in ['x86_64', 'amd64'] else 'aarch64' if ansible_architecture in ['aarch64', 'arm64'] else ansible_architecture }}"
+      when: docker_compose_check.rc != 0
+
+    - name: Create Docker CLI plugins directory
+      ansible.builtin.file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: "0755"
+      when: docker_compose_check.rc != 0
+
+    - name: Install Docker Compose v2 CLI plugin
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-{{ docker_compose_arch }}"
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: "0755"
+      when: docker_compose_check.rc != 0
+
+    - name: Verify Docker Compose plugin
+      ansible.builtin.command:
+        cmd: docker compose version
+      changed_when: false
+
+    - name: Add SSH user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+      when: ansible_user is defined
+
+    - name: Check whether k3s is already installed
+      ansible.builtin.command:
+        cmd: test -x /usr/local/bin/k3s
+      register: k3s_installed
+      changed_when: false
+      failed_when: false
+      when: install_kubernetes | bool
+
+    - name: Install Kubernetes with k3s
+      ansible.builtin.shell:
+        cmd: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
+      args:
+        creates: /usr/local/bin/k3s
+      when:
+        - install_kubernetes | bool
+        - k3s_installed.rc != 0
+
+    - name: Wait for Kubernetes node to become ready
+      ansible.builtin.command:
+        cmd: kubectl get nodes
+      register: k8s_nodes
+      changed_when: false
+      retries: 12
+      delay: 10
+      until: k8s_nodes.rc == 0
+      when: install_kubernetes | bool
+
+    - name: Clone or update project repository
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ repo_version }}"
+        force: true
+
+    - name: Validate Compose configuration
+      ansible.builtin.command:
+        cmd: docker compose config
+        chdir: "{{ app_dir }}"
+      changed_when: false
+
+    - name: Validate Kubernetes manifests
+      ansible.builtin.command:
+        cmd: ./scripts/validate-k8s-manifests.sh
+        chdir: "{{ app_dir }}"
+      changed_when: false
+      when: install_kubernetes | bool
+
+    - name: Deploy application and monitoring stack
+      ansible.builtin.command:
+        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+        chdir: "{{ app_dir }}"
+      changed_when: true
+
+    - name: Apply Kubernetes manifests for orchestration demonstration
+      ansible.builtin.command:
+        cmd: kubectl apply -f k8s/
+        chdir: "{{ app_dir }}"
+      changed_when: true
+      when:
+        - install_kubernetes | bool
+        - deploy_kubernetes_manifests | bool
+
+    - name: Show deployed containers
+      ansible.builtin.command:
+        cmd: docker compose ps
+        chdir: "{{ app_dir }}"
+      changed_when: false
+      register: compose_ps
+
+    - name: Print deployment status
+      ansible.builtin.debug:
+        var: compose_ps.stdout_lines

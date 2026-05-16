@@ -12,7 +12,7 @@
         <div>
           <p class="eyebrow">SRE assignment demo</p>
           <h1>Microservices Shop</h1>
-          <p class="lead">A small working system with authentication, products, orders, chat, metrics, dashboards, and an incident drill.</p>
+          <p class="lead">A small working system with authentication, products, orders, payments, chat, metrics, dashboards, and an incident drill.</p>
         </div>
         <div class="hero-actions">
           <button id="refresh">Refresh System</button>
@@ -79,6 +79,25 @@
           <label>Quantity<input id="order-quantity" placeholder="quantity" value="1"></label>
           <button id="create-order">Create Order</button>
           <pre id="orders-output"></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>Payments</h2>
+            <a href="http://localhost:8006/docs" target="_blank" rel="noreferrer">API docs</a>
+          </div>
+          <label>Order ID<input id="payment-order" placeholder="order id" value="1"></label>
+          <label>Amount<input id="payment-amount" placeholder="amount" value="25.00"></label>
+          <label>Method
+            <select id="payment-method">
+              <option value="card">card</option>
+              <option value="cash">cash</option>
+              <option value="bank_transfer">bank transfer</option>
+              <option value="invalid">invalid simulation</option>
+            </select>
+          </label>
+          <button id="create-payment">Create Payment</button>
+          <pre id="payments-output"></pre>
         </article>
 
         <article class="panel">

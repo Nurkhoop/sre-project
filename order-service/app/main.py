@@ -78,6 +78,23 @@ def list_orders():
         return cursor.fetchall()
 
 
+@app.get("/orders/{order_id}")
+def get_order(order_id: int):
+    with db_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id, user_id, product_id, quantity, status, created_at
+            FROM orders
+            WHERE id=%s
+            """,
+            (order_id,),
+        )
+        order = cursor.fetchone()
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order
+
+
 @app.post("/orders", status_code=201)
 def create_order(payload: OrderPayload):
     if payload.quantity < 1:

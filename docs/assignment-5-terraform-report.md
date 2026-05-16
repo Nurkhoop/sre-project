@@ -2,24 +2,25 @@
 
 ## Objective
 
-Terraform is used to provision a reproducible VM environment for the containerized
-microservices system.
+Terraform is used to provision a reproducible Google Cloud VM environment for
+the containerized microservices system.
 
 ## Implemented Files
 
-- `terraform/main.tf`
-- `terraform/variables.tf`
-- `terraform/outputs.tf`
-- `terraform/terraform.tfvars`
+- `terraform-gcp/main.tf`
+- `terraform-gcp/variables.tf`
+- `terraform-gcp/outputs.tf`
+- `terraform-gcp/terraform.tfvars`
 
 ## Provisioned Infrastructure
 
-The AWS Terraform configuration provisions:
+The Google Cloud Terraform configuration provisions:
 
-- One AWS EC2 virtual machine
-- Security group allowing:
+- One Compute Engine virtual machine
+- Firewall rule allowing:
   - SSH on port `22`
-  - HTTP on port `80`
+  - HTTP frontend on port `80`
+  - Backend API demo ports `8001-8006`
   - Grafana on port `3000`
   - Prometheus on port `9090`
 - Public IP output
@@ -27,7 +28,7 @@ The AWS Terraform configuration provisions:
 ## Reproducibility Commands
 
 ```bash
-cd terraform
+cd terraform-gcp
 terraform init
 terraform plan
 terraform apply
@@ -44,32 +45,14 @@ Terraform prints:
 
 ## Notes
 
-The provided `terraform.tfvars` contains placeholders. Replace the AMI ID,
-EC2 key pair, and SSH CIDR before applying in a real AWS account.
+The provided `terraform-gcp/terraform.tfvars` contains the Google Cloud project,
+zone, VM size, network, firewall, and SSH username settings for this deployment.
+Adjust these values before applying in another Google Cloud project.
 
-For local validation, the configuration was checked with:
-
-```bash
-terraform fmt -check
-terraform validate
-```
-
-## Google Cloud Alternative
-
-The project also includes `terraform-gcp/` for Google Cloud Compute Engine.
-This version provisions:
-
-- One Compute Engine VM
-- Firewall rules for ports `22`, `80`, `3000`, and `9090`
-- Public IP output
-
-Commands:
+For local validation, the configuration can be checked with:
 
 ```bash
 cd terraform-gcp
-terraform init
-terraform plan
-terraform apply
+terraform fmt -check
+terraform validate
 ```
-
-This option can be used when the deployment server is a Google Cloud VM.

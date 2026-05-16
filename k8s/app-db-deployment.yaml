@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-db
+  namespace: sre-microservices
+  labels:
+    app: app-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-db
+  template:
+    metadata:
+      labels:
+        app: app-db
+    spec:
+      containers:
+        - name: app-db
+          image: postgres:13-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: app-db-secret
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - app_db_dev
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi

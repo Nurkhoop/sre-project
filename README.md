@@ -7,10 +7,10 @@ monitoring, and an incident response simulation.
 
 - Frontend: JavaScript application served by Nginx
 - API gateway: Nginx reverse proxy
-- Microservices: `auth-service`, `user-service`, `product-service`, `order-service`, `chat-service`
+- Microservices: `auth-service`, `user-service`, `product-service`, `order-service`, `payment-service`, `chat-service`
 - Database: PostgreSQL
 - Monitoring: Prometheus and Grafana
-- Infrastructure as Code: Terraform AWS EC2 provisioning
+- Infrastructure as Code: Terraform Google Cloud Compute Engine provisioning
 
 ## Run Locally
 
@@ -50,6 +50,7 @@ Grafana credentials:
 - Product Service: http://localhost:8003/docs
 - Order Service: http://localhost:8004/docs
 - Chat Service: http://localhost:8005/docs
+- Payment Service: http://localhost:8006/docs
 
 Each service exposes:
 
@@ -57,7 +58,7 @@ Each service exposes:
 - `/metrics`
 
 Docker Compose also defines container healthchecks for PostgreSQL, frontend,
-Prometheus, Grafana, and all five FastAPI services.
+Prometheus, Grafana, and all six FastAPI services.
 
 Runtime containers use `restart: unless-stopped` for basic self-healing.
 
@@ -91,6 +92,12 @@ Validate configuration before deployment:
 ./scripts/validate-config.sh
 ```
 
+Run a quick end-to-end smoke test:
+
+```bash
+./scripts/smoke-test.sh
+```
+
 Inspect logs for common incident patterns:
 
 ```bash
@@ -106,24 +113,14 @@ REQUESTS=300 CONCURRENCY=20 ./scripts/load-test.sh
 ## Terraform
 
 ```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-Replace placeholder values in `terraform/terraform.tfvars` before applying.
-
-Google Cloud alternative:
-
-```bash
 cd terraform-gcp
 terraform init
 terraform plan
 terraform apply
 ```
 
-Use this folder if your assignment VM is on Google Cloud Compute Engine.
+Edit `terraform-gcp/terraform.tfvars` before applying if your Google Cloud
+project, zone, or VM settings are different.
 
 ## Docker Stack
 
@@ -136,9 +133,9 @@ docker stack deploy -c docker-stack.yml sre-assignment
 
 ## Kubernetes Auto-Scaling Artifact
 
-The `k8s/` folder demonstrates Kubernetes integration and automated scaling for
-Assignment 6. The Order Service HPA scales from 2 to 5 replicas when average CPU
-utilization reaches 70%.
+The `k8s/` folder demonstrates Kubernetes integration for the full app stack.
+Order Service and Payment Service HPAs scale from 2 to 5 replicas when average
+CPU utilization reaches 70%.
 
 Validate without deploying:
 
@@ -157,9 +154,10 @@ If no Kubernetes cluster is configured, use:
 - Deployment guide: `docs/deployment-guide.md`
 - Final report draft: `docs/final-report.md`
 - Architecture diagram: `docs/architecture.md`
+- SLI/SLO design: `docs/sli-slo.md`
 - Assignment 4 incident report: `docs/assignment-4-incident-report.md`
 - Postmortem: `docs/postmortem.md`
 - Assignment 5 Terraform report: `docs/assignment-5-terraform-report.md`
 - Assignment 6 automation and capacity report: `docs/assignment-6-automation-capacity-report.md`
-- Screenshot checklist: `docs/screenshot-checklist.md`
-- Screenshot filename plan: `docs/screenshots/README.md`
+- Complete testing guide: `docs/testing-guide.md`
+- Ansible deployment automation: `ansible/README.md`

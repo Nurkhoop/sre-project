@@ -52,7 +52,7 @@ variable "network_tag" {
 }
 
 variable "allowed_source_cidr" {
-  description = "CIDR allowed to access SSH, HTTP, Grafana, and Prometheus."
+  description = "CIDR allowed to access SSH, HTTP, Grafana, backend demo APIs, and Prometheus."
   type        = string
   default     = "0.0.0.0/0"
 }

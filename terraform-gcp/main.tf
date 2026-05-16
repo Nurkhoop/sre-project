@@ -21,7 +21,7 @@ resource "google_compute_firewall" "sre_microservices" {
 
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "3000", "9090"]
+    ports    = ["22", "80", "3000", "8001-8006", "9090"]
   }
 
   source_ranges = [var.allowed_source_cidr]

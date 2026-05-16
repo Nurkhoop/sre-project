@@ -71,6 +71,28 @@ services:
       timeout: 5s
       retries: 5
 
+  payment-service:
+    build: ./payment-service
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DB_HOST: ${DB_HOST:-app-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-app_db_dev}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      ORDER_SERVICE_URL: ${ORDER_SERVICE_URL:-http://order-service:8000}
+    depends_on:
+      - app-db
+      - order-service
+    ports:
+      - "8006:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   chat-service:
     build: ./chat-service
     restart: unless-stopped
@@ -114,6 +136,7 @@ services:
       - user-service
       - product-service
       - order-service
+      - payment-service
       - chat-service
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/"]
@@ -136,6 +159,7 @@ services:
       - user-service
       - product-service
       - order-service
+      - payment-service
       - chat-service
       - cadvisor
       - node-exporter
@@ -174,6 +198,7 @@ services:
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
 

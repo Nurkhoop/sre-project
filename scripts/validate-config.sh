@@ -12,6 +12,7 @@ required_vars=(
   DB_PASSWORD
   USER_SERVICE_URL
   PRODUCT_SERVICE_URL
+  ORDER_SERVICE_URL
 )
 
 if [ -f "${ROOT_DIR}/.env" ]; then
@@ -28,6 +29,7 @@ DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
 USER_SERVICE_URL="${USER_SERVICE_URL:-http://user-service:8000}"
 PRODUCT_SERVICE_URL="${PRODUCT_SERVICE_URL:-http://product-service:8000}"
+ORDER_SERVICE_URL="${ORDER_SERVICE_URL:-http://order-service:8000}"
 
 echo "Validating required environment variables..."
 for var_name in "${required_vars[@]}"; do
@@ -44,7 +46,7 @@ if ! [[ "${DB_PORT}" =~ ^[0-9]+$ ]]; then
 fi
 
 echo "Checking service URL formats..."
-for service_url in "${USER_SERVICE_URL}" "${PRODUCT_SERVICE_URL}"; do
+for service_url in "${USER_SERVICE_URL}" "${PRODUCT_SERVICE_URL}" "${ORDER_SERVICE_URL}"; do
   if ! [[ "${service_url}" =~ ^https?:// ]]; then
     echo "ERROR: ${service_url} must start with http:// or https://"
     exit 1

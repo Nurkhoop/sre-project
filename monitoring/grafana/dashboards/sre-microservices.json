@@ -55,7 +55,7 @@
       "pluginVersion": "10.4.1",
       "targets": [
         {
-          "expr": "up{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}",
+          "expr": "up{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\"}",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -93,7 +93,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[1m]))",
+          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\"}[1m]))",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -131,7 +131,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (job, status) (increase(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\", status=~\"5..\"}[5m]))",
+          "expr": "sum by (job, status) (increase(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\", status=~\"5..\"}[5m]))",
           "legendFormat": "{{job}} {{status}}",
           "refId": "A"
         }
@@ -169,7 +169,7 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\"}[5m])))",
           "legendFormat": "{{job}} p95",
           "refId": "A"
         }
@@ -207,8 +207,8 @@
       },
       "targets": [
         {
-          "expr": "sum by (container_label_com_docker_compose_service) (rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service!=\"\"}[2m])) * 100",
-          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[2m])) * 100",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -245,8 +245,8 @@
       },
       "targets": [
         {
-          "expr": "max by (container_label_com_docker_compose_service) (container_memory_working_set_bytes{container_label_com_docker_compose_service!=\"\"})",
-          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "expr": "max by (name) (container_memory_working_set_bytes{name!=\"\"})",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],
@@ -359,7 +359,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\", status=~\"5..\"}[5m])) / clamp_min(sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|chat-service\"}[5m])), 0.001)",
+          "expr": "sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\", status=~\"5..\"}[5m])) / clamp_min(sum by (job) (rate(http_requests_total{job=~\"auth-service|user-service|product-service|order-service|payment-service|chat-service\"}[5m])), 0.001)",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
@@ -397,8 +397,8 @@
       },
       "targets": [
         {
-          "expr": "changes(container_start_time_seconds{container_label_com_docker_compose_service!=\"\"}[10m])",
-          "legendFormat": "{{container_label_com_docker_compose_service}}",
+          "expr": "changes(container_start_time_seconds{name!=\"\"}[10m])",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],

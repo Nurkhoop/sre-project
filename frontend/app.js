@@ -19,6 +19,7 @@ const services = [
   ["Users", "/health/users"],
   ["Products", "/health/products"],
   ["Orders", "/health/orders"],
+  ["Payments", "/health/payments"],
   ["Chat", "/health/chat"],
 ];
 
@@ -66,6 +67,7 @@ const refresh = async () => {
   await loadProducts();
   show("users-output", await request("/api/users/"));
   show("orders-output", await request("/api/orders/"));
+  show("payments-output", await request("/api/payments/"));
   show("chat-output", await request("/api/chat/messages"));
 };
 
@@ -124,6 +126,21 @@ document.getElementById("create-order").onclick = async () => {
     }));
   } catch (error) {
     show("orders-output", error);
+  }
+};
+
+document.getElementById("create-payment").onclick = async () => {
+  try {
+    show("payments-output", await request("/api/payments/", {
+      method: "POST",
+      body: JSON.stringify({
+        order_id: Number(document.getElementById("payment-order").value),
+        amount: Number(document.getElementById("payment-amount").value),
+        method: document.getElementById("payment-method").value,
+      }),
+    }));
+  } catch (error) {
+    show("payments-output", error);
   }
 };
 

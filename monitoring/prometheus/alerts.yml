@@ -11,7 +11,7 @@ groups:
           description: "Prometheus cannot scrape order-service. Check Docker status, logs, and DB configuration."
 
       - alert: AnyMicroserviceDown
-        expr: up{job=~"auth-service|user-service|product-service|order-service|chat-service"} == 0
+        expr: up{job=~"auth-service|user-service|product-service|order-service|payment-service|chat-service"} == 0
         for: 1m
         labels:
           severity: warning
@@ -19,8 +19,17 @@ groups:
           summary: "A backend microservice is down"
           description: "One of the FastAPI services is unavailable and needs investigation."
 
+      - alert: PaymentServiceDown
+        expr: up{job="payment-service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Payment Service is down"
+          description: "Prometheus cannot scrape payment-service. Check Docker status, logs, and database connectivity."
+
       - alert: HighErrorRate
-        expr: sum by (job) (rate(http_requests_total{job=~"auth-service|user-service|product-service|order-service|chat-service", status=~"5.."}[2m])) > 0.05
+        expr: sum by (job) (rate(http_requests_total{job=~"auth-service|user-service|product-service|order-service|payment-service|chat-service", status=~"5.."}[2m])) > 0.05
         for: 2m
         labels:
           severity: warning
@@ -29,7 +38,7 @@ groups:
           description: "A backend service is returning elevated 5xx responses. Check service logs and recent deployments."
 
       - alert: HighRequestLatency
-        expr: histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~"auth-service|user-service|product-service|order-service|chat-service"}[5m]))) > 1
+        expr: histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_seconds_bucket{job=~"auth-service|user-service|product-service|order-service|payment-service|chat-service"}[5m]))) > 1
         for: 3m
         labels:
           severity: warning
@@ -47,7 +56,7 @@ groups:
           description: "Order Service RPS is above the assignment threshold. Consider horizontal scaling and database optimization."
 
       - alert: HighContainerCpuUsage
-        expr: sum by (container_label_com_docker_compose_service) (rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service!=""}[2m])) * 100 > 80
+        expr: sum by (name) (rate(container_cpu_usage_seconds_total{name!=""}[2m])) * 100 > 80
         for: 3m
         labels:
           severity: warning
@@ -56,7 +65,7 @@ groups:
           description: "A container is using high CPU for several minutes. Review load test results and scaling options."
 
       - alert: HighContainerMemoryUsage
-        expr: container_memory_working_set_bytes{container_label_com_docker_compose_service!="", container_label_com_docker_compose_service!="app-db"} > 400000000
+        expr: container_memory_working_set_bytes{name!=""} > 400000000
         for: 3m
         labels:
           severity: warning
@@ -65,7 +74,7 @@ groups:
           description: "A service container is using more than 400 MB working memory."
 
       - alert: PossibleContainerRestartLoop
-        expr: changes(container_start_time_seconds{container_label_com_docker_compose_service!=""}[10m]) > 1
+        expr: changes(container_start_time_seconds{name!=""}[10m]) > 1
         for: 1m
         labels:
           severity: critical

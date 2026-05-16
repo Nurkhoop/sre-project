@@ -9,6 +9,7 @@ This project demonstrates a small production-style microservices system for an S
 - Implement a containerized microservices architecture.
 - Use Terraform for reproducible infrastructure provisioning.
 - Deploy services using Docker Compose and provide Docker Stack configuration.
+- Demonstrate a six-service backend architecture with payment handling.
 - Collect metrics and visualize service health.
 - Simulate a realistic Order Service incident.
 - Document incident response and postmortem analysis.
@@ -20,18 +21,20 @@ This project demonstrates a small production-style microservices system for an S
 - Frontend: HTML, CSS, JavaScript served by Nginx
 - Database: PostgreSQL
 - Containerization: Docker
-- Orchestration: Docker Compose and Docker Stack
+- Orchestration: Docker Compose, Docker Stack, and Kubernetes artifacts
 - Monitoring: Prometheus and Grafana
-- Infrastructure as Code: Terraform AWS EC2
+- Infrastructure as Code: Terraform Google Cloud Compute Engine
+- Configuration Management: Ansible
 
 ## 4. System Architecture
 
-The system contains five backend microservices:
+The system contains six backend microservices:
 
 - `auth-service`: registration, login, token validation, and simple role-based authorization
 - `user-service`: user profile creation and lookup
 - `product-service`: product listing and product lookup
 - `order-service`: transactional order creation
+- `payment-service`: payment handling simulation for created orders
 - `chat-service`: user-to-user message creation and listing
 
 The frontend is served by Nginx. Nginx also acts as an API gateway and routes browser requests to the internal services. PostgreSQL is used as the shared database for the assignment demo.
@@ -47,7 +50,8 @@ See `docs/architecture.md` for the Mermaid architecture diagram.
 | Authorization | `auth-service` roles: `user` and `admin` |
 | Product retrieval | `product-service` |
 | Order creation | `order-service` |
-| Inter-service communication | `order-service` calls `user-service` and `product-service` |
+| Payment simulation | `payment-service` |
+| Inter-service communication | `order-service` calls `user-service` and `product-service`; `payment-service` calls `order-service` |
 | Metrics | `/metrics` endpoint in each service |
 | Failure logging | Docker logs and service health endpoints |
 
@@ -90,22 +94,24 @@ Assignment 6 adds:
 - `scripts/validate-config.sh` for pre-deployment configuration validation.
 - `scripts/inspect-logs.sh` for log-based incident troubleshooting.
 - `scripts/load-test.sh` for repeatable capacity testing.
-- Docker Stack resource limits and two `order-service` replicas for horizontal scaling demonstration.
+- Docker Stack resource limits and two `order-service` and `payment-service` replicas for horizontal scaling demonstration.
+- Kubernetes manifests cover PostgreSQL, frontend, all six backend services, and HPA policies for transactional services.
+- Ansible deployment automation for VM configuration, Docker installation, k3s/Kubernetes installation, Kubernetes manifest validation, and repeatable stack deployment.
 
 Detailed capacity analysis is documented in `docs/assignment-6-automation-capacity-report.md`.
 
 ## 9. Infrastructure as Code
 
-Terraform provisions one AWS EC2 instance, security group rules for ports `22`, `80`, `3000`, and `9090`, and public IP outputs.
+Terraform provisions one Google Cloud Compute Engine VM, firewall rules for ports `22`, `80`, `3000`, `8001-8006`, and `9090`, and public IP outputs.
 
 ```bash
-cd terraform
+cd terraform-gcp
 terraform init
 terraform plan
 terraform apply
 ```
 
-Before a real apply, replace placeholder values in `terraform/terraform.tfvars`.
+Before a real apply, verify values in `terraform-gcp/terraform.tfvars`.
 
 ## 10. Incident Simulation
 
@@ -144,10 +150,6 @@ Action items:
 - Validate environment variables before deployment.
 - Use staged configuration review before production rollout.
 
-## 12. Screenshots
-
-Screenshots should be saved in `docs/screenshots/` using the filenames listed in `docs/screenshots/README.md`.
-
-## 13. Conclusion
+## 12. Conclusion
 
 The project demonstrates the combination of microservices, containerization, Infrastructure as Code, observability, and incident response practices in a simple, reproducible student-level system.

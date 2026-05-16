@@ -43,6 +43,7 @@ curl http://localhost:8002/health
 curl http://localhost:8003/health
 curl http://localhost:8004/health
 curl http://localhost:8005/health
+curl http://localhost:8006/health
 ```
 
 5. Check Docker health status:
@@ -62,7 +63,7 @@ docker compose ps
 1. Open Prometheus at http://localhost:9090/targets.
 2. Confirm all service targets are `UP`.
 3. Open Prometheus rules at http://localhost:9090/rules.
-4. Confirm `OrderServiceDown` and `AnyMicroserviceDown` are loaded.
+4. Confirm `OrderServiceDown`, `PaymentServiceDown`, and `AnyMicroserviceDown` are loaded.
 5. Open Grafana at http://localhost:3000.
 6. Login with `admin` / `admin`.
 7. Open the `SRE Microservices Overview` dashboard.
@@ -84,6 +85,14 @@ During the test, watch the Grafana dashboard panels for:
 - container memory usage
 - host CPU saturation
 
+Create a payment after an order exists:
+
+```bash
+curl -X POST http://localhost:8080/api/payments/ \
+  -H "Content-Type: application/json" \
+  -d '{"order_id":1,"amount":25.00,"method":"card"}'
+```
+
 For log-based troubleshooting, run:
 
 ```bash
@@ -91,28 +100,6 @@ For log-based troubleshooting, run:
 ```
 
 ## Terraform VM Provisioning
-
-AWS version:
-
-1. Edit `terraform/terraform.tfvars`.
-2. Run:
-
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-3. Copy the repository to the VM.
-4. Run Docker Compose on the VM.
-5. Access:
-
-- `http://PUBLIC_IP`
-- `http://PUBLIC_IP:3000`
-- `http://PUBLIC_IP:9090`
-
-Google Cloud version:
 
 1. Edit `terraform-gcp/terraform.tfvars`.
 2. Run:
@@ -127,6 +114,33 @@ terraform apply
 3. SSH into the VM.
 4. Clone the repository.
 5. Run Docker Compose on the VM.
+6. Access:
+
+- `http://PUBLIC_IP`
+- `http://PUBLIC_IP:3000`
+- `http://PUBLIC_IP:9090`
+
+## Ansible Deployment
+
+Ansible can configure a fresh VM, install Docker and k3s/Kubernetes, validate
+Compose and Kubernetes manifests, and deploy the same Compose stack:
+
+```bash
+cp ansible/inventory.example.ini ansible/inventory.ini
+ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+```
+
+Update the VM IP address and Git repository URL in `ansible/inventory.ini`
+before running the playbook.
+
+The default inventory keeps Kubernetes manifest application disabled because
+Docker Compose is the main runtime demo:
+
+```ini
+deploy_kubernetes_manifests=false
+```
+
+Set it to `true` only when the Kubernetes cluster can access the service images.
 
 ## Docker Stack Deployment
 
