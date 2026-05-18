@@ -8,6 +8,13 @@
     image_repository: ghcr.io/nurkhoop/sre-project
     image_tag: latest
   tasks:
+    - name: Check required system dependencies
+      ansible.builtin.command:
+        cmd: dpkg-query -W -f='${Status}' docker.io git curl ca-certificates
+      register: system_dependencies_check
+      changed_when: false
+      failed_when: false
+
     - name: Install system dependencies
       ansible.builtin.apt:
         name:
@@ -19,6 +26,7 @@
         update_cache: true
         cache_valid_time: 3600
         lock_timeout: 300
+      when: system_dependencies_check.rc != 0
 
     - name: Enable Docker service
       ansible.builtin.service:
