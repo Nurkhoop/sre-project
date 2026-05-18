@@ -44,7 +44,7 @@ jobs:
           [sre_nodes:vars]
           app_dir=${APP_DIR}
           repo_url=https://github.com/${{ github.repository }}.git
-          install_kubernetes=true
+          install_kubernetes=false
           deploy_kubernetes_manifests=false
           EOF
 

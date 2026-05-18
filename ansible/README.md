@@ -61,6 +61,10 @@ The `Deploy` workflow is intentionally manual-only. It creates a temporary
 `ansible/inventory.ci.ini` file and runs this playbook against the VM only after
 the VM owner or repository admin adds deployment secrets.
 
+The GitHub Actions inventory sets `install_kubernetes=false` because Compose is
+the production deployment path and Kubernetes validation requires extra tools on
+the VM. Kubernetes manifests remain available as optional artifacts.
+
 Required repository secrets:
 
 - `VM_HOST`: public IP address or DNS name of the VM.
