@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose config
+        run: ./scripts/validate-config.sh
+
+      - name: Validate Kubernetes manifests
+        run: ./scripts/validate-k8s-manifests.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt check
+        working-directory: terraform-gcp
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init without backend
+        working-directory: terraform-gcp
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform-gcp
+        run: terraform validate
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile Python service modules
+        run: |
+          python3 -m compileall \
+            auth-service/app \
+            user-service/app \
+            product-service/app \
+            order-service/app \
+            payment-service/app \
+            chat-service/app
+
+      - name: Ruff check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: >-
+            check
+            auth-service user-service product-service order-service payment-service chat-service
+            --select E9,F63,F7,F82
+
+      - name: Hadolint Dockerfiles
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          recursive: true
+          failure-threshold: error
+
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: table
+          exit-code: "1"
+          severity: HIGH,CRITICAL
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+      - quality
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - auth-service
+          - user-service
+          - product-service
+          - order-service
+          - payment-service
+          - chat-service
+          - frontend
+          - db-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t sre-${{ matrix.service }}:ci ./${{ matrix.service }}
+
+  compose-smoke-test:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up --build -d
+
+      - name: Wait for healthy services
+        run: ./scripts/wait-compose-healthy.sh
+
+      - name: Run smoke test
+        run: ./scripts/smoke-test.sh
+
+      - name: Print logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v

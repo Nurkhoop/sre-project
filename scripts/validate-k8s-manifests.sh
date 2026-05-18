@@ -15,7 +15,7 @@ ruby -e '
     "Service"
   ]
 
-  paths = Dir["k8s/*.yaml"].sort
+  paths = Dir["k8s/*.yaml"].reject { |path| File.basename(path) == "kustomization.yaml" }.sort
   abort("ERROR: no Kubernetes manifests found") if paths.empty?
 
   paths.each do |path|

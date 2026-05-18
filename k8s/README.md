@@ -60,3 +60,33 @@ kubectl cluster-info
 
 For a real cluster, Kubernetes Metrics Server must be installed for CPU-based
 HPA decisions.
+
+## Production Image Overlay
+
+The root `k8s/kustomization.yaml` keeps the existing plain manifests renderable
+with Kustomize. The `k8s/base` directory mirrors those manifests so the nested
+production overlay can render with default Kustomize load restrictions. The
+optional production overlay rewrites local demo images to GitHub Container
+Registry images and sets application image pull policy to `Always`.
+
+Render the production manifests:
+
+```bash
+kubectl kustomize k8s/overlays/prod
+```
+
+Apply them to a configured cluster:
+
+```bash
+kubectl apply -k k8s/overlays/prod
+```
+
+Check application rollout status:
+
+```bash
+kubectl rollout status deployment/auth-service -n sre-microservices
+kubectl rollout status deployment/frontend -n sre-microservices
+```
+
+The Compose deployment remains the primary runtime path for this project. The
+Kustomize overlay is provided as an optional Kubernetes CD artifact.

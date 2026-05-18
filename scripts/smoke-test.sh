@@ -2,6 +2,8 @@
 set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://localhost:8080}"
+PROMETHEUS_URL="${PROMETHEUS_URL:-http://localhost:9090/-/healthy}"
+GRAFANA_URL="${GRAFANA_URL:-http://localhost:3000/api/health}"
 
 echo "Checking frontend gateway at ${BASE_URL}..."
 curl -fsS "${BASE_URL}/" >/dev/null
@@ -13,8 +15,8 @@ for service in auth users products orders payments chat; do
 done
 
 echo "Checking monitoring endpoints..."
-curl -fsS "http://localhost:9090/-/healthy" >/dev/null
-curl -fsS "http://localhost:3000/api/health" >/dev/null
+curl -fsS "${PROMETHEUS_URL}" >/dev/null
+curl -fsS "${GRAFANA_URL}" >/dev/null
 
 echo "Creating test user..."
 curl -fsS -X POST "${BASE_URL}/api/users/" \

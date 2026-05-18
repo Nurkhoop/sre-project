@@ -1,0 +1,24 @@
+services:
+  auth-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/auth-service:${IMAGE_TAG:-latest}
+
+  user-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/user-service:${IMAGE_TAG:-latest}
+
+  product-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/product-service:${IMAGE_TAG:-latest}
+
+  order-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/order-service:${IMAGE_TAG:-latest}
+
+  payment-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/payment-service:${IMAGE_TAG:-latest}
+
+  chat-service:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/chat-service:${IMAGE_TAG:-latest}
+
+  frontend:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/frontend:${IMAGE_TAG:-latest}
+
+  app-db:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/nurkhoop/sre-project}/db-service:${IMAGE_TAG:-latest}
