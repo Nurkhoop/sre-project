@@ -1,32 +1,25 @@
 name: Deploy
 
 on:
+  workflow_run:
+    workflows: ["Release Images"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       image_tag:
-        description: Image tag to deploy, for example latest or main-abc1234
+        description: Image tag to deploy
         required: true
         default: latest
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
       APP_DIR: ${{ vars.APP_DIR || '/opt/sre-microservices' }}
-      DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'main' }}
-      MANUAL_IMAGE_TAG: ${{ inputs.image_tag }}
+      IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Resolve image tag
-        run: |
-          IMAGE_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
-          echo "IMAGE_REPOSITORY=${IMAGE_REPOSITORY}" >> "$GITHUB_ENV"
-          echo "IMAGE_TAG=${MANUAL_IMAGE_TAG}" >> "$GITHUB_ENV"
-          echo "Deploying ${IMAGE_REPOSITORY}:${MANUAL_IMAGE_TAG}"
-
-      - name: Install Ansible
-        run: python3 -m pip install ansible
 
       - name: Configure SSH
         run: |
@@ -35,25 +28,17 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Create inventory
+      - name: Deploy with Docker Compose
         run: |
-          cat > ansible/inventory.ci.ini <<EOF
-          [sre_nodes]
-          sre-vm ansible_host=${{ secrets.VM_HOST }} ansible_user=${{ secrets.VM_USER }}
+          IMAGE_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
 
-          [sre_nodes:vars]
-          app_dir=${APP_DIR}
-          repo_url=https://github.com/${{ github.repository }}.git
-          install_kubernetes=false
-          deploy_kubernetes_manifests=false
-          EOF
+          ssh -i ~/.ssh/id_rsa "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" \
+            "cd '${APP_DIR}' && \
+             git pull && \
+             IMAGE_REPOSITORY='${IMAGE_REPOSITORY}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml pull && \
+             IMAGE_REPOSITORY='${IMAGE_REPOSITORY}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml up -d --no-build"
 
-      - name: Deploy with Ansible
-        run: |
-          ansible-playbook -i ansible/inventory.ci.ini ansible/deploy.yml \
-            --extra-vars "repo_version=${DEPLOY_BRANCH} image_repository=${IMAGE_REPOSITORY} image_tag=${IMAGE_TAG}"
-
-      - name: Post-deployment smoke test
+      - name: Smoke test
         env:
           BASE_URL: http://${{ secrets.VM_HOST }}
           PROMETHEUS_URL: http://${{ secrets.VM_HOST }}:9090/-/healthy
