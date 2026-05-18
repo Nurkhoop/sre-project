@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .env
 ansible/inventory.ini
+ansible/inventory.ci.ini
 .terraform/
 *.tfstate
 *.tfstate.backup

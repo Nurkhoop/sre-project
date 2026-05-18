@@ -5,6 +5,8 @@
   vars:
     repo_version: main
     docker_compose_version: v2.29.7
+    image_repository: ghcr.io/nurkhoop/sre-project
+    image_tag: latest
   tasks:
     - name: Install system dependencies
       ansible.builtin.apt:
@@ -98,8 +100,11 @@
 
     - name: Validate Compose configuration
       ansible.builtin.command:
-        cmd: docker compose config
+        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml config
         chdir: "{{ app_dir }}"
+      environment:
+        IMAGE_REPOSITORY: "{{ image_repository }}"
+        IMAGE_TAG: "{{ image_tag }}"
       changed_when: false
 
     - name: Validate Kubernetes manifests
@@ -109,10 +114,22 @@
       changed_when: false
       when: install_kubernetes | bool
 
-    - name: Deploy application and monitoring stack
+    - name: Pull published application images
       ansible.builtin.command:
-        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml pull
         chdir: "{{ app_dir }}"
+      environment:
+        IMAGE_REPOSITORY: "{{ image_repository }}"
+        IMAGE_TAG: "{{ image_tag }}"
+      changed_when: true
+
+    - name: Start application and monitoring stack
+      ansible.builtin.command:
+        cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml up -d --no-build
+        chdir: "{{ app_dir }}"
+      environment:
+        IMAGE_REPOSITORY: "{{ image_repository }}"
+        IMAGE_TAG: "{{ image_tag }}"
       changed_when: true
 
     - name: Apply Kubernetes manifests for orchestration demonstration

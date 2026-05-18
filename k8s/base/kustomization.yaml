@@ -1,0 +1,25 @@
+resources:
+  - namespace.yaml
+  - app-db-deployment.yaml
+  - app-db-secret.yaml
+  - app-db-service.yaml
+  - auth-service-deployment.yaml
+  - auth-service-service.yaml
+  - chat-service-deployment.yaml
+  - chat-service-service.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  - order-service-configmap.yaml
+  - order-service-deployment.yaml
+  - order-service-hpa.yaml
+  - order-service-secret.yaml
+  - order-service-service.yaml
+  - payment-service-configmap.yaml
+  - payment-service-deployment.yaml
+  - payment-service-hpa.yaml
+  - payment-service-secret.yaml
+  - payment-service-service.yaml
+  - product-service-deployment.yaml
+  - product-service-service.yaml
+  - user-service-deployment.yaml
+  - user-service-service.yaml

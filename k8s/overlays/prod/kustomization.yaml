@@ -1,0 +1,76 @@
+resources:
+  - ../../base
+
+images:
+  - name: sre-auth-service
+    newName: ghcr.io/nurkhoop/sre-project/auth-service
+    newTag: latest
+  - name: sre-user-service
+    newName: ghcr.io/nurkhoop/sre-project/user-service
+    newTag: latest
+  - name: sre-product-service
+    newName: ghcr.io/nurkhoop/sre-project/product-service
+    newTag: latest
+  - name: sre-order-service
+    newName: ghcr.io/nurkhoop/sre-project/order-service
+    newTag: latest
+  - name: sre-payment-service
+    newName: ghcr.io/nurkhoop/sre-project/payment-service
+    newTag: latest
+  - name: sre-chat-service
+    newName: ghcr.io/nurkhoop/sre-project/chat-service
+    newTag: latest
+  - name: sre-frontend
+    newName: ghcr.io/nurkhoop/sre-project/frontend
+    newTag: latest
+
+patches:
+  - target:
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: user-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: product-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: order-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: payment-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: chat-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always

@@ -51,6 +51,34 @@ deploy_kubernetes_manifests=true
 
 in `ansible/inventory.ini`.
 
+## CI/CD Deployment
+
+The GitHub Actions `Deploy` workflow creates a temporary
+`ansible/inventory.ci.ini` file and runs this playbook against the VM after
+container images are published to GitHub Container Registry.
+
+Required repository secrets:
+
+- `VM_HOST`: public IP address or DNS name of the VM.
+- `VM_USER`: SSH username for the VM.
+- `VM_SSH_PRIVATE_KEY`: private SSH key with access to the VM.
+
+Recommended repository variables:
+
+- `APP_DIR`: deployment directory on the VM, for example `/opt/sre-microservices`.
+- `DEPLOY_BRANCH`: Git branch checked out on the VM, normally `main`.
+
+The playbook accepts these CI/CD variables:
+
+```bash
+ansible-playbook -i ansible/inventory.ci.ini ansible/deploy.yml \
+  --extra-vars "repo_version=main image_repository=ghcr.io/nurkhoop/sre-project image_tag=latest"
+```
+
+For rollback, manually run the `Deploy` workflow and provide a previous
+immutable image tag such as `main-abc1234` or `v1.0.0`. The playbook will pull
+that tag and restart the Compose stack without rebuilding images on the VM.
+
 ## Covered SRE Criteria
 
 - Configuration management
@@ -61,3 +89,5 @@ in `ansible/inventory.ini`.
 - Monitoring stack deployment
 - Kubernetes manifest validation and optional apply
 - Repeatable recovery after VM reprovisioning
+- CI/CD deployment using published immutable container images
+- Rollback by redeploying a previous image tag
