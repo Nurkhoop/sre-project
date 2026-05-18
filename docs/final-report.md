@@ -97,7 +97,7 @@ Assignment 6 adds:
 - Docker Stack resource limits and two `order-service` and `payment-service` replicas for horizontal scaling demonstration.
 - Kubernetes manifests cover PostgreSQL, frontend, all six backend services, and HPA policies for transactional services.
 - Ansible deployment automation for VM configuration, Docker installation, k3s/Kubernetes installation, Kubernetes manifest validation, and repeatable stack deployment.
-- GitHub Actions workflows validate configuration, build service images, publish immutable GHCR tags, deploy the VM through Ansible, and support rollback by redeploying a previous image tag.
+- GitHub Actions workflows validate configuration, build service images, and publish immutable GHCR tags. VM deployment is manual-only until the VM owner adds SSH secrets; rollback is supported by redeploying a previous image tag.
 
 Detailed capacity analysis is documented in `docs/assignment-6-automation-capacity-report.md`.
 

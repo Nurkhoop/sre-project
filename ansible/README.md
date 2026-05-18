@@ -53,9 +53,13 @@ in `ansible/inventory.ini`.
 
 ## CI/CD Deployment
 
-The GitHub Actions `Deploy` workflow creates a temporary
-`ansible/inventory.ci.ini` file and runs this playbook against the VM after
-container images are published to GitHub Container Registry.
+CI and image publishing do not require VM access. The GitHub Actions `CI`
+workflow validates configuration and builds images, while `Release Images`
+publishes service images to GitHub Container Registry.
+
+The `Deploy` workflow is intentionally manual-only. It creates a temporary
+`ansible/inventory.ci.ini` file and runs this playbook against the VM only after
+the VM owner or repository admin adds deployment secrets.
 
 Required repository secrets:
 
@@ -75,9 +79,25 @@ ansible-playbook -i ansible/inventory.ci.ini ansible/deploy.yml \
   --extra-vars "repo_version=main image_repository=ghcr.io/nurkhoop/sre-project image_tag=latest"
 ```
 
-For rollback, manually run the `Deploy` workflow and provide a previous
-immutable image tag such as `main-abc1234` or `v1.0.0`. The playbook will pull
-that tag and restart the Compose stack without rebuilding images on the VM.
+If VM secrets are not available, the VM owner can deploy published images
+manually on the server:
+
+```bash
+IMAGE_TAG=latest docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.prod.yml \
+  -f docker-compose.images.yml \
+  pull
+
+IMAGE_TAG=latest docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.prod.yml \
+  -f docker-compose.images.yml \
+  up -d --no-build
+```
+
+For rollback, rerun the manual `Deploy` workflow or the VM commands with a
+previous immutable image tag such as `main-abc1234` or `v1.0.0`.
 
 ## Covered SRE Criteria
 
