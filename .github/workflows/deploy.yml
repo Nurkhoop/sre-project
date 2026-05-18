@@ -34,6 +34,7 @@ jobs:
 
           ssh -i ~/.ssh/id_rsa "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" \
             "cd '${APP_DIR}' && \
+             git config --global --add safe.directory '${APP_DIR}' && \
              git pull && \
              IMAGE_REPOSITORY='${IMAGE_REPOSITORY}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml pull && \
              IMAGE_REPOSITORY='${IMAGE_REPOSITORY}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml up -d --no-build"
