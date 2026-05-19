@@ -122,6 +122,21 @@
       changed_when: false
       when: install_kubernetes | bool
 
+    - name: Show disk usage before image pull
+      ansible.builtin.command:
+        cmd: df -h /
+      changed_when: false
+      register: disk_usage_before_pull
+
+    - name: Print disk usage before image pull
+      ansible.builtin.debug:
+        var: disk_usage_before_pull.stdout_lines
+
+    - name: Prune unused Docker data before pulling images
+      ansible.builtin.command:
+        cmd: docker system prune -af
+      changed_when: true
+
     - name: Pull published application images
       ansible.builtin.command:
         cmd: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml pull
