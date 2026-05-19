@@ -1,6 +1,10 @@
 name: Deploy
 
 on:
+  workflow_run:
+    workflows: ["Release Images"]
+    branches: [main]
+    types: [completed]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -10,7 +14,11 @@ on:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
     env:
       APP_DIR: ${{ vars.APP_DIR || '/opt/sre-microservices' }}
       DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH || 'main' }}
@@ -21,9 +29,10 @@ jobs:
       - name: Resolve image tag
         run: |
           IMAGE_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE_TAG="${MANUAL_IMAGE_TAG:-latest}"
           echo "IMAGE_REPOSITORY=${IMAGE_REPOSITORY}" >> "$GITHUB_ENV"
-          echo "IMAGE_TAG=${MANUAL_IMAGE_TAG}" >> "$GITHUB_ENV"
-          echo "Deploying ${IMAGE_REPOSITORY}:${MANUAL_IMAGE_TAG}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_ENV"
+          echo "Deploying ${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 
       - name: Install Ansible
         run: python3 -m pip install ansible
